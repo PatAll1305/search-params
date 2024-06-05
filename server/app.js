@@ -8,7 +8,7 @@ require('express-async-errors');
 
 // Import the models used in these routes - DO NOT MODIFY
 const { Band, Musician, Instrument } = require('./db/models');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 // Express using json - DO NOT MODIFY
 app.use(express.json());
@@ -31,7 +31,7 @@ app.get('/musicians', async (req, res, next) => {
         query.limit = size;
         query.offset = size * (page - 1);
     }
-    
+
 
     // STEP 1: WHERE clauses on the Musician model
     // ?firstName=XX&lastName=YY
@@ -39,10 +39,11 @@ app.get('/musicians', async (req, res, next) => {
     // End result: { where: { firstName: req.query.firstName } }
 
     // Your code here 
-    
+    const { firstName, lastName, bandName, instrumentTypes } = req.query
     // Add keys to the WHERE clause to match the lastName param, if it exists.
     // End result: { where: { lastName: req.query.lastName } }
-    
+    if (firstName) query.where.firstName = firstName
+    if (lastName) query.where.lastName = lastName
     // Your code here 
 
 
@@ -52,6 +53,7 @@ app.get('/musicians', async (req, res, next) => {
     // name matches the bandName param, if it exists.
     // End result: { include: [{ model: Band, where: { name: req.query.bandName } }] }
 
+    if (bandName) query.where.bandName = bandName
     // Your code here 
 
 
@@ -68,7 +70,12 @@ app.get('/musicians', async (req, res, next) => {
             where: { type: req.query.instrumentTypes }, 
             through: { attributes: [] } // Omits the join table attributes
         }] } 
-    */
+        */
+    if (instrumentTypes) query.include.push({
+        model: Instrument,
+        where: { type: instrumentTypes },
+        through: { attributes: [] }
+    })
 
     // Your code here 
 
